@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { authMiddleware } from "../middleware/auth";
+import { ensureUserProfile } from "../services/user.service";
 import type { AppEnv } from "../types/hono";
 
 export const authRoutes = new Hono<AppEnv>();
@@ -12,4 +13,11 @@ authRoutes.post("/refresh", (c) => c.json({ message: "refresh" }));
 authRoutes.post("/logout", (c) => c.json({ message: "logout" }));
 
 authRoutes.use("/me", authMiddleware);
-authRoutes.get("/me", (c) => c.json({ user: c.get("user") ?? null }));
+authRoutes.get("/me", async (c) => {
+  const authUser = c.get("user");
+  if (!authUser) {
+    return c.json({ user: null }, 401);
+  }
+  const { user, isNew } = await ensureUserProfile(authUser);
+  return c.json({ user, isNew });
+});

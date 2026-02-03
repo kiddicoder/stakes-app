@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import type { User } from "@supabase/supabase-js";
 import type { AppEnv } from "../types/hono";
 import { updateUserSchema } from "../utils/validation";
 import {
@@ -8,12 +7,25 @@ import {
   searchUsers,
   updateUserById
 } from "../services/user.service";
+import { requireAuth } from "../middleware/requireAuth";
 
 export const userRoutes = new Hono<AppEnv>();
 
 userRoutes.get("/search", (c) => {
   const query = c.req.query("q") ?? "";
   return searchUsers(query).then((results) => c.json({ query, results }));
+});
+
+userRoutes.get("/me", requireAuth, async (c) => {
+  const authUser = c.get("user");
+  if (!authUser) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+  const user = await getUserById(authUser.id);
+  if (!user) {
+    return c.json({ error: "User not found" }, 404);
+  }
+  return c.json({ user });
 });
 
 userRoutes.get("/:id", async (c) => {
@@ -31,11 +43,8 @@ userRoutes.get("/:id/stats", async (c) => {
   return c.json({ id, stats });
 });
 
-userRoutes.patch("/me", async (c) => {
-  const authUser = c.get("user") as User | null;
-  if (!authUser) {
-    return c.json({ error: "Unauthorized" }, 401);
-  }
+userRoutes.patch("/me", requireAuth, async (c) => {
+  const authUser = c.get("user");
 
   const payload = await c.req.json().catch(() => ({}));
   const parsed = updateUserSchema.safeParse(payload);
@@ -55,11 +64,8 @@ userRoutes.patch("/me", async (c) => {
   }
 });
 
-userRoutes.post("/me/avatar", async (c) => {
-  const authUser = c.get("user") as User | null;
-  if (!authUser) {
-    return c.json({ error: "Unauthorized" }, 401);
-  }
+userRoutes.post("/me/avatar", requireAuth, async (c) => {
+  const authUser = c.get("user");
 
   const payload = await c.req.json().catch(() => ({}));
   const parsed = updateUserSchema.pick({ avatarUrl: true }).safeParse(payload);
