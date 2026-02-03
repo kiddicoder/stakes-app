@@ -1,0 +1,25 @@
+# Node
+node_modules
+npm-debug.log*
+
+# OS
+.DS_Store
+
+# Env
+.env
+.env.*
+
+# Expo
+.expo
+.expo-shared
+web-build
+
+# Builds
+build
+coverage
+
+# Turborepo
+.turbo
+
+# Logs
+*.log
