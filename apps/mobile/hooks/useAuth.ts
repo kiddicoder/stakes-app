@@ -3,7 +3,7 @@ import { useAuthStore } from "../stores/authStore";
 import { getSession, onAuthStateChange } from "../services/auth";
 
 export function useAuth() {
-  const { setAuth, clearAuth } = useAuthStore();
+  const { setAuth, clearAuth, setInitialized } = useAuthStore();
 
   useEffect(() => {
     let active = true;
@@ -16,6 +16,7 @@ export function useAuth() {
       } else {
         clearAuth();
       }
+      setInitialized(true);
     });
 
     const { data } = onAuthStateChange((_event, session) => {
@@ -24,13 +25,14 @@ export function useAuth() {
       } else {
         clearAuth();
       }
+      setInitialized(true);
     });
 
     return () => {
       active = false;
       data.subscription.unsubscribe();
     };
-  }, [setAuth, clearAuth]);
+  }, [setAuth, clearAuth, setInitialized]);
 
   return useAuthStore();
 }
