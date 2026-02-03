@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useAuthStore } from "../stores/authStore";
 import { getSession, onAuthStateChange } from "../services/auth";
+import { syncProfile } from "../services/profile";
 
 export function useAuth() {
   const { setAuth, clearAuth, setInitialized } = useAuthStore();
@@ -13,6 +14,7 @@ export function useAuth() {
       const session = data.session;
       if (session?.user?.id && session.access_token) {
         setAuth(session.user.id, session.access_token);
+        syncProfile().catch(() => undefined);
       } else {
         clearAuth();
       }
@@ -22,6 +24,7 @@ export function useAuth() {
     const { data } = onAuthStateChange((_event, session) => {
       if (session?.user?.id && session.access_token) {
         setAuth(session.user.id, session.access_token);
+        syncProfile().catch(() => undefined);
       } else {
         clearAuth();
       }
