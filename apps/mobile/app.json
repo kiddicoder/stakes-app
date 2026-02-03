@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Accountability Stakes",
+    "slug": "accountability-stakes",
+    "scheme": "accountability",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F2EFEA"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "bundleIdentifier": "com.accountability.stakes"
+    },
+    "android": {
+      "package": "com.accountability.stakes",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#F2EFEA"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": ["expo-router"],
+    "extra": {
+      "router": {
+        "origin": "tabs"
+      }
+    }
+  }
+}
