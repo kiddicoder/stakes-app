@@ -1,9 +1,9 @@
 # Roadmap
 
 ## Week 1: Foundation
-- [ ] Monorepo scaffolding and workspace scripts
-- [ ] Mobile app base navigation (Expo Router)
-- [ ] API server skeleton (Hono)
+- [x] Monorepo scaffolding and workspace scripts
+- [x] Mobile app base navigation (Expo Router)
+- [x] API server skeleton (Hono)
 - [ ] Database schema and migrations (Drizzle)
 - [ ] Supabase project setup (auth, DB, storage)
 - [ ] Basic auth flow (magic link)
