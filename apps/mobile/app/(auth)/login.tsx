@@ -3,8 +3,10 @@ import { StyleSheet } from "react-native";
 import { Button, HelperText, Text, TextInput } from "react-native-paper";
 import { Screen } from "../../components/ui/Screen";
 import { sendMagicLink } from "../../services/auth";
+import { useRouter } from "expo-router";
 
 export default function LoginScreen() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
     "idle"
@@ -46,6 +48,9 @@ export default function LoginScreen() {
         loading={status === "sending"}
       >
         Send Magic Link
+      </Button>
+      <Button mode="text" onPress={() => router.push("/(auth)/register")}>
+        Create an account
       </Button>
     </Screen>
   );
