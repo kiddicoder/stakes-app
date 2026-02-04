@@ -26,11 +26,6 @@
     "web": {
       "bundler": "metro"
     },
-    "plugins": ["expo-router"],
-    "extra": {
-      "router": {
-        "origin": "tabs"
-      }
-    }
+    "plugins": ["expo-router"]
   }
 }
