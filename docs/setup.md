@@ -53,6 +53,10 @@ npm run dev:api
 2. Enable Email auth under Authentication.
 3. Create a storage bucket named `proof-photos`.
 4. Grab the project URL and keys from Settings > API.
+5. Set Auth URL config for local development:
+   - Site URL: `http://localhost:8081`
+   - Redirect URLs: `http://localhost:8081/verify` and `accountability://verify`
+6. If you hit magic link email limits while testing, wait for the cooldown window or adjust limits in Auth rate-limit settings.
 
 ## Database Migrations (Drizzle)
 ```bash

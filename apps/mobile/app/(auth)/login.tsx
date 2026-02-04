@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
 import { Button, HelperText, Text, TextInput } from "react-native-paper";
 import { Screen } from "../../components/ui/Screen";
-import { sendMagicLink } from "../../services/auth";
+import { formatAuthError, sendMagicLink } from "../../services/auth";
 import { useRouter } from "expo-router";
 
 export default function LoginScreen() {
@@ -12,6 +12,15 @@ export default function LoginScreen() {
     "idle"
   );
   const [error, setError] = useState<string | null>(null);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+
+  useEffect(() => {
+    if (cooldownSeconds <= 0) return;
+    const interval = setInterval(() => {
+      setCooldownSeconds((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [cooldownSeconds]);
 
   const handleSend = async () => {
     setStatus("sending");
@@ -19,10 +28,11 @@ export default function LoginScreen() {
     const { error: signInError } = await sendMagicLink(email.trim());
     if (signInError) {
       setStatus("error");
-      setError(signInError.message);
+      setError(formatAuthError(signInError.message));
       return;
     }
     setStatus("sent");
+    setCooldownSeconds(60);
   };
 
   return (
@@ -44,10 +54,10 @@ export default function LoginScreen() {
       <Button
         mode="contained"
         onPress={handleSend}
-        disabled={!email || status === "sending"}
+        disabled={!email || status === "sending" || cooldownSeconds > 0}
         loading={status === "sending"}
       >
-        Send Magic Link
+        {cooldownSeconds > 0 ? `Wait ${cooldownSeconds}s` : "Send Magic Link"}
       </Button>
       <Button mode="text" onPress={() => router.push("/(auth)/register")}>
         Create an account

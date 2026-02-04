@@ -1,7 +1,26 @@
 import { supabase } from "./supabase";
 
+function getEmailRedirectTo() {
+  if (typeof window !== "undefined" && window.location?.origin) {
+    return `${window.location.origin}/verify`;
+  }
+  return "accountability://verify";
+}
+
+export function formatAuthError(message: string) {
+  if (message.toLowerCase().includes("rate limit")) {
+    return "Too many email requests. Please wait a bit, then try again.";
+  }
+  return message;
+}
+
 export async function sendMagicLink(email: string) {
-  return supabase.auth.signInWithOtp({ email });
+  return supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: getEmailRedirectTo()
+    }
+  });
 }
 
 export async function sendSignupMagicLink(
@@ -12,6 +31,7 @@ export async function sendSignupMagicLink(
   return supabase.auth.signInWithOtp({
     email,
     options: {
+      emailRedirectTo: getEmailRedirectTo(),
       data: {
         username,
         full_name: displayName || undefined
