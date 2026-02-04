@@ -70,5 +70,8 @@ npm run db:migrate
    - account.updated
 
 ## Troubleshooting
+- If you see `EMFILE: too many open files, watch` when running Expo:
+  - Install Watchman: `brew install watchman`
+  - Or temporarily increase the open file limit: `ulimit -n 8192` (run in the same shell before `npm run dev:mobile`)
 - If Expo cannot reach the API, ensure `EXPO_PUBLIC_API_URL` points to a reachable host.
 - For device testing, use your machine IP (e.g., `http://192.168.1.5:3000`).
