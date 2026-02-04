@@ -10,7 +10,7 @@ const frequencies = ["daily", "weekly", "one_time"] as const;
 export default function CreateScreen() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState(categories[0]);
+  const [category, setCategory] = useState<(typeof categories)[number]>(categories[0]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [frequency, setFrequency] = useState<(typeof frequencies)[number]>("daily");

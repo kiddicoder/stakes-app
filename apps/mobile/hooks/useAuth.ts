@@ -21,10 +21,10 @@ export function useAuth() {
       setInitialized(true);
     });
 
-    const { data } = onAuthStateChange((_event, session) => {
+    const { data } = onAuthStateChange(async (_event, session) => {
       if (session?.user?.id && session.access_token) {
         setAuth(session.user.id, session.access_token);
-        syncProfile().catch(() => undefined);
+        await syncProfile().catch(() => undefined);
       } else {
         clearAuth();
       }
