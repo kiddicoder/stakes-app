@@ -31,3 +31,18 @@ export const createCommitmentSchema = z
     isPublic: z.boolean().optional()
   })
   .strict();
+
+export const createCheckInSchema = z
+  .object({
+    checkInDate: z.string().min(10),
+    note: z.string().max(2000).optional(),
+    proofPhotoUrl: z.string().url().optional(),
+    userReportedStatus: z.enum(["success", "failure"])
+  })
+  .strict();
+
+export const refereeActionSchema = z
+  .object({
+    refereeNote: z.string().max(2000).optional()
+  })
+  .strict();
