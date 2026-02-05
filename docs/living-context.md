@@ -49,6 +49,9 @@ This file is a high-detail handoff doc so future sessions can recover project st
   - `GET /check-ins/pending-verification`
   - `POST /check-ins/:id/verify`
   - `POST /check-ins/:id/dispute`
+- Feed:
+  - `GET /feed` (user + public stream)
+  - `GET /feed/public`
 
 ## Dashboard Endpoint Contract
 - Route: `GET /commitments/dashboard`
@@ -75,15 +78,18 @@ This file is a high-detail handoff doc so future sessions can recover project st
 - Home:
   - live dashboard integration in `apps/mobile/app/(tabs)/index.tsx`
   - sections: hero, pending actions, active commitments, challenges placeholder
+- Feed:
+  - live toggle between friends and public feeds in `apps/mobile/app/(tabs)/feed.tsx`
 - Create:
-  - baseline form in `apps/mobile/app/(tabs)/create.tsx`
+  - baseline form + referee username search for stakes in `apps/mobile/app/(tabs)/create.tsx`
 - Detail and check-in:
   - `apps/mobile/app/commitment/[id].tsx`
   - `apps/mobile/app/commitment/check-in.tsx`
+- Referee:
+  - queue screen with verify/dispute actions in `apps/mobile/app/referee.tsx`
 
 ## Known Gaps
 - Challenges are not implemented end-to-end yet.
-- Feed tab remains placeholder.
 - Friends tab remains placeholder.
 - Notifications tab remains placeholder.
 - Payment lifecycle and Stripe webhook processing still pending.
@@ -95,7 +101,7 @@ This file is a high-detail handoff doc so future sessions can recover project st
 - `npm run dev:api` will fail with `EADDRINUSE` when port `3000` already has a running API.
 
 ## Suggested Next Dev Sequence
-1. Build referee invitation UX in create flow and enforce selection via friend search.
-2. Add mobile referee queue screen using `/check-ins/pending-verification`.
-3. Build minimal activity feed backend and populate feed tab.
-4. Start Stripe setup intent + stored method UI.
+1. Restrict referee selection to accepted friends and add invite fallback path.
+2. Build challenge flows (create, detail, check-ins, score display).
+3. Add notifications backend and wire notifications screen.
+4. Start Stripe setup intent + stored payment method UI.

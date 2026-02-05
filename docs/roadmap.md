@@ -21,8 +21,9 @@
 - [x] Create commitment flow (baseline implementation)
 - [x] Commitment detail screen (baseline implementation)
 - [x] Check-in submission flow
-- [ ] Referee invitation (link or username)
+- [x] Referee selection via username search in commitment create flow
 - [x] Referee verification API flow (pending list, verify, dispute)
+- [x] Referee verification mobile queue screen
 - [x] Home dashboard with active commitments and pending actions
 
 ## Week 3: Payments and Settlement
@@ -42,7 +43,7 @@
 
 ## Post-MVP (Weeks 5-8)
 - [ ] Challenges (head-to-head)
-- [ ] Activity feed
+- [x] Activity feed baseline (created/check-in activity stream)
 - [ ] Leaderboards
 - [ ] Charities and anti-charities
 - [ ] Stripe Connect for referee payouts
@@ -50,7 +51,7 @@
 - [ ] Public profiles and sharing
 
 ## Next Up (Immediate)
-1. Referee invitation UX in mobile create flow and API support for username lookup selection.
-2. Referee workspace screen to process pending verifications from mobile.
-3. Commitments dashboard cards in dedicated reusable components.
-4. Feed data model and real activity retrieval (currently placeholder).
+1. Add friend-request based referee picker (limit to accepted friends, not global users).
+2. Implement challenge create/detail/check-in flow with settlement-ready schema usage.
+3. Add notification center wiring with real backend notifications data.
+4. Start Stripe setup intents and stake capture flow for activation.
