@@ -2,35 +2,47 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { Button, HelperText, Text, TextInput } from "react-native-paper";
 import { Screen } from "../../components/ui/Screen";
-import { getMe, updateMe, type Profile } from "../../services/profile";
+import { getMe, syncProfile, updateMe, type Profile } from "../../services/profile";
+import { signOut } from "../../services/auth";
+import { useRouter } from "expo-router";
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  const loadProfile = async (active: boolean) => {
+    setLoading(true);
+    setError(null);
+    try {
+      let res = await getMe();
+      if (!res.user) {
+        await syncProfile().catch(() => undefined);
+        res = await getMe();
+      }
+      if (!active) return;
+      setProfile(res.user ?? null);
+      setUsername(res.user?.username ?? "");
+      setDisplayName(res.user?.displayName ?? "");
+    } catch (err) {
+      if (!active) return;
+      setProfile(null);
+      setError("Unable to load profile. Tap retry to bootstrap your account.");
+    } finally {
+      if (!active) return;
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     let active = true;
-    setLoading(true);
-    getMe()
-      .then((res) => {
-        if (!active) return;
-        setProfile(res.user);
-        setUsername(res.user.username);
-        setDisplayName(res.user.displayName ?? "");
-      })
-      .catch(() => {
-        if (!active) return;
-        setError("Unable to load profile");
-      })
-      .finally(() => {
-        if (!active) return;
-        setLoading(false);
-      });
+    loadProfile(active).catch(() => undefined);
     return () => {
       active = false;
     };
@@ -54,6 +66,13 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    await signOut().catch(() => undefined);
+    setSigningOut(false);
+    router.replace("/(auth)/login");
+  };
+
   if (loading) {
     return (
       <Screen>
@@ -68,7 +87,13 @@ export default function ProfileScreen() {
     return (
       <Screen>
         <Text style={styles.title}>Profile</Text>
-        <HelperText type="error">Profile not found. Please try again.</HelperText>
+        <HelperText type="error">{error ?? "Profile not found."}</HelperText>
+        <Button mode="contained" onPress={() => loadProfile(true)} style={styles.button}>
+          Retry
+        </Button>
+        <Button mode="outlined" onPress={handleSignOut} loading={signingOut}>
+          Log Out
+        </Button>
       </Screen>
     );
   }
@@ -101,6 +126,15 @@ export default function ProfileScreen() {
       <Button mode="contained" onPress={handleSave} loading={saving} disabled={saving}>
         Save Changes
       </Button>
+      <Button
+        mode="outlined"
+        onPress={handleSignOut}
+        loading={signingOut}
+        disabled={signingOut}
+        style={styles.button}
+      >
+        Log Out
+      </Button>
     </Screen>
   );
 }
@@ -117,6 +151,9 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 12
+  },
+  button: {
+    marginTop: 12
   },
   center: {
     flex: 1,

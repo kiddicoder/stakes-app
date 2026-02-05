@@ -15,6 +15,7 @@ export default function CreateScreen() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [frequency, setFrequency] = useState<(typeof frequencies)[number]>("daily");
+  const [stakesEnabled, setStakesEnabled] = useState(false);
   const [stakesAmount, setStakesAmount] = useState("");
   const [refereeId, setRefereeId] = useState("");
   const [refereeQuery, setRefereeQuery] = useState("");
@@ -24,10 +25,10 @@ export default function CreateScreen() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const stakesCents = useMemo(
-    () => Math.max(0, Math.round(Number(stakesAmount || 0) * 100)),
-    [stakesAmount]
-  );
+  const stakesCents = useMemo(() => {
+    if (!stakesEnabled) return 0;
+    return Math.max(0, Math.round(Number(stakesAmount || 0) * 100));
+  }, [stakesAmount, stakesEnabled]);
   const hasStakes = stakesCents > 0;
 
   useEffect(() => {
@@ -90,6 +91,7 @@ export default function CreateScreen() {
       setDescription("");
       setStartDate("");
       setEndDate("");
+      setStakesEnabled(false);
       setStakesAmount("");
       setRefereeId("");
       setRefereeQuery("");
@@ -165,14 +167,34 @@ export default function CreateScreen() {
           ))}
         </View>
 
-        <TextInput
-          label="Stakes Amount (USD)"
-          mode="outlined"
-          value={stakesAmount}
-          onChangeText={setStakesAmount}
-          keyboardType="numeric"
-          style={styles.input}
-        />
+        <Text style={styles.section}>Add Stakes?</Text>
+        <View style={styles.row}>
+          <Button
+            mode={stakesEnabled ? "contained" : "outlined"}
+            onPress={() => setStakesEnabled(true)}
+            style={styles.chip}
+          >
+            Yes
+          </Button>
+          <Button
+            mode={!stakesEnabled ? "contained" : "outlined"}
+            onPress={() => setStakesEnabled(false)}
+            style={styles.chip}
+          >
+            No
+          </Button>
+        </View>
+
+        {stakesEnabled ? (
+          <TextInput
+            label="Stakes Amount (USD)"
+            mode="outlined"
+            value={stakesAmount}
+            onChangeText={setStakesAmount}
+            keyboardType="numeric"
+            style={styles.input}
+          />
+        ) : null}
         {hasStakes ? (
           <View style={styles.refereeWrap}>
             <Text style={styles.section}>Referee (required)</Text>

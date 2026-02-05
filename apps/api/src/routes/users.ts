@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { AppEnv } from "../types/hono";
 import { updateUserSchema } from "../utils/validation";
 import {
+  ensureUserProfile,
   getUserById,
   getUserStatsById,
   searchUsers,
@@ -21,10 +22,7 @@ userRoutes.get("/me", requireAuth, async (c) => {
   if (!authUser) {
     return c.json({ error: "Unauthorized" }, 401);
   }
-  const user = await getUserById(authUser.id);
-  if (!user) {
-    return c.json({ error: "User not found" }, 404);
-  }
+  const { user } = await ensureUserProfile(authUser);
   return c.json({ user });
 });
 

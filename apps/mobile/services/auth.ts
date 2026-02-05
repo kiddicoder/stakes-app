@@ -8,8 +8,15 @@ function getEmailRedirectTo() {
 }
 
 export function formatAuthError(message: string) {
-  if (message.toLowerCase().includes("rate limit")) {
+  const normalized = message.toLowerCase();
+  if (normalized.includes("rate limit")) {
     return "Too many email requests. Please wait a bit, then try again.";
+  }
+  if (normalized.includes("invalid login credentials")) {
+    return "Invalid email or password.";
+  }
+  if (normalized.includes("password should be at least")) {
+    return "Password is too short.";
   }
   return message;
 }
@@ -42,6 +49,32 @@ export async function sendSignupMagicLink(
 
 export async function signOut() {
   return supabase.auth.signOut();
+}
+
+export async function signInWithPassword(email: string, password: string) {
+  return supabase.auth.signInWithPassword({
+    email,
+    password
+  });
+}
+
+export async function signUpWithPassword(
+  email: string,
+  password: string,
+  username: string,
+  displayName?: string
+) {
+  return supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: getEmailRedirectTo(),
+      data: {
+        username,
+        full_name: displayName || undefined
+      }
+    }
+  });
 }
 
 export async function getSession() {
