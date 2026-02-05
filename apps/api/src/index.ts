@@ -5,6 +5,7 @@ import { authRoutes } from "./routes/auth";
 import { userRoutes } from "./routes/users";
 import { commitmentRoutes } from "./routes/commitments";
 import { checkInRoutes } from "./routes/check-ins";
+import { feedRoutes } from "./routes/feed";
 import { authMiddleware } from "./middleware/auth";
 import type { AppEnv } from "./types/hono";
 
@@ -19,6 +20,8 @@ app.use("/commitments/*", authMiddleware);
 app.route("/commitments", commitmentRoutes);
 app.use("/check-ins/*", authMiddleware);
 app.route("/check-ins", checkInRoutes);
+app.use("/feed/*", authMiddleware);
+app.route("/feed", feedRoutes);
 
 const port = Number(process.env.PORT ?? 3000);
 

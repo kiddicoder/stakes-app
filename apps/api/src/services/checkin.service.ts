@@ -1,6 +1,6 @@
 import { and, eq, or, sql } from "drizzle-orm";
 import { db } from "../db";
-import { checkIns, commitments } from "../db/schema";
+import { activities, checkIns, commitments } from "../db/schema";
 import { parseDate } from "../utils/dates";
 
 export async function listCheckInsForCommitment(userId: string, commitmentId: string) {
@@ -94,6 +94,21 @@ export async function createCheckInForCommitment(
         .where(eq(commitments.id, commitmentId));
     }
 
+    if (finalStatus !== "pending") {
+      await tx.insert(activities).values({
+        userId: commitment.userId,
+        activityType: finalStatus === "success" ? "check_in_success" : "check_in_failure",
+        referenceType: "check_in",
+        referenceId: inserted[0]?.id,
+        metadata: {
+          commitmentId,
+          checkInDate: payload.checkInDate,
+          title: commitment.title
+        },
+        isPublic: commitment.isPublic
+      });
+    }
+
     return inserted[0];
   });
 
@@ -168,6 +183,19 @@ export async function verifyCheckIn(
         .where(eq(commitments.id, record.commitment.id));
     }
 
+    await tx.insert(activities).values({
+      userId: record.commitment.userId,
+      activityType: finalStatus === "success" ? "check_in_success" : "check_in_failure",
+      referenceType: "check_in",
+      referenceId: record.checkIn.id,
+      metadata: {
+        commitmentId: record.commitment.id,
+        checkInDate: record.checkIn.checkInDate,
+        title: record.commitment.title
+      },
+      isPublic: record.commitment.isPublic
+    });
+
     return updatedRows[0];
   });
 
@@ -218,6 +246,19 @@ export async function disputeCheckIn(
         failedCheckIns: sql`${commitments.failedCheckIns} + 1`
       })
       .where(eq(commitments.id, record.commitment.id));
+
+    await tx.insert(activities).values({
+      userId: record.commitment.userId,
+      activityType: "check_in_failure",
+      referenceType: "check_in",
+      referenceId: record.checkIn.id,
+      metadata: {
+        commitmentId: record.commitment.id,
+        checkInDate: record.checkIn.checkInDate,
+        title: record.commitment.title
+      },
+      isPublic: record.commitment.isPublic
+    });
 
     return updatedRows[0];
   });

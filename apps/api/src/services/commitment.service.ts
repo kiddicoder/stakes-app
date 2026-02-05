@@ -1,6 +1,6 @@
 import { and, eq, inArray, or, sql } from "drizzle-orm";
 import { db } from "../db";
-import { checkIns, commitments, userStats, users } from "../db/schema";
+import { activities, checkIns, commitments, userStats, users } from "../db/schema";
 import { calculateCheckInsRequired, parseDate } from "../utils/dates";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -95,7 +95,22 @@ export async function createCommitment(
     })
     .returning();
 
-  return rows[0];
+  const created = rows[0];
+  if (created) {
+    await db.insert(activities).values({
+      userId,
+      activityType: "commitment_created",
+      referenceType: "commitment",
+      referenceId: created.id,
+      metadata: {
+        title: created.title,
+        stakesAmount: created.stakesAmount
+      },
+      isPublic: created.isPublic
+    });
+  }
+
+  return created;
 }
 
 export async function getCommitmentDashboard(userId: string) {
