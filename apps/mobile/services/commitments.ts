@@ -22,6 +22,48 @@ export async function createCommitment(payload: CreateCommitmentPayload) {
   });
 }
 
+export type DashboardCommitment = {
+  id: string;
+  title: string;
+  category: string;
+  startDate: string;
+  endDate: string;
+  checkInFrequency: "daily" | "weekly" | "one_time";
+  stakesAmount: number;
+  stakesCurrency: string;
+  status: string;
+  totalCheckInsRequired: number;
+  successfulCheckIns: number;
+  failedCheckIns: number;
+  checkInDueToday: boolean;
+  completedCount: number;
+  progressPercent: number;
+  daysRemaining: number;
+};
+
+export type DashboardSummary = {
+  profile: {
+    username: string | null;
+    displayName: string | null;
+  };
+  stats: {
+    currentStreak: number;
+    longestStreak: number;
+    commitmentsWon: number;
+    commitmentsLost: number;
+  };
+  activeCommitments: DashboardCommitment[];
+  pendingActions: {
+    checkInsDueToday: number;
+    refereeVerificationsNeeded: number;
+    challengeInvites: number;
+  };
+};
+
+export async function getCommitmentDashboard() {
+  return apiFetch<DashboardSummary>("/commitments/dashboard");
+}
+
 export async function listCommitments() {
   return apiFetch<{ items: any[] }>("/commitments");
 }

@@ -4,6 +4,7 @@ import { requireAuth } from "../middleware/requireAuth";
 import { createCheckInSchema, createCommitmentSchema } from "../utils/validation";
 import {
   createCommitment,
+  getCommitmentDashboard,
   getCommitmentById,
   listCommitments
 } from "../services/commitment.service";
@@ -16,6 +17,13 @@ commitmentRoutes.get("/", requireAuth, async (c) => {
   if (!authUser) return c.json({ error: "Unauthorized" }, 401);
   const items = await listCommitments(authUser.id);
   return c.json({ items });
+});
+
+commitmentRoutes.get("/dashboard", requireAuth, async (c) => {
+  const authUser = c.get("user");
+  if (!authUser) return c.json({ error: "Unauthorized" }, 401);
+  const summary = await getCommitmentDashboard(authUser.id);
+  return c.json(summary);
 });
 
 commitmentRoutes.get("/:id", requireAuth, async (c) => {
