@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Button, HelperText, Text, TextInput } from "react-native-paper";
+import { ActivityIndicator, Button, HelperText, Text, TextInput } from "react-native-paper";
 import { Screen } from "../../components/ui/Screen";
 import { categories } from "../../constants/categories";
 import { createCommitment } from "../../services/commitments";
+import { searchUsers, type SearchUser } from "../../services/users";
 
 const frequencies = ["daily", "weekly", "one_time"] as const;
 
@@ -16,15 +17,61 @@ export default function CreateScreen() {
   const [frequency, setFrequency] = useState<(typeof frequencies)[number]>("daily");
   const [stakesAmount, setStakesAmount] = useState("");
   const [refereeId, setRefereeId] = useState("");
+  const [refereeQuery, setRefereeQuery] = useState("");
+  const [refereeResults, setRefereeResults] = useState<SearchUser[]>([]);
+  const [searchingReferee, setSearchingReferee] = useState(false);
+  const [selectedReferee, setSelectedReferee] = useState<SearchUser | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const stakesCents = useMemo(
+    () => Math.max(0, Math.round(Number(stakesAmount || 0) * 100)),
+    [stakesAmount]
+  );
+  const hasStakes = stakesCents > 0;
+
+  useEffect(() => {
+    if (!hasStakes) {
+      setRefereeResults([]);
+      setRefereeQuery("");
+      setRefereeId("");
+      setSelectedReferee(null);
+      return;
+    }
+
+    const trimmed = refereeQuery.trim();
+    if (trimmed.length < 2) {
+      setRefereeResults([]);
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      setSearchingReferee(true);
+      searchUsers(trimmed)
+        .then((res) => {
+          setRefereeResults(res.results ?? []);
+        })
+        .catch(() => {
+          setRefereeResults([]);
+        })
+        .finally(() => {
+          setSearchingReferee(false);
+        });
+    }, 250);
+
+    return () => clearTimeout(timeout);
+  }, [refereeQuery, hasStakes]);
 
   const handleSubmit = async () => {
     setSaving(true);
     setError(null);
     setSuccess(null);
-    const amount = Math.round(Number(stakesAmount || 0) * 100);
+
+    if (hasStakes && !refereeId) {
+      setSaving(false);
+      setError("Choose a referee when stakes are above $0.");
+      return;
+    }
 
     try {
       await createCommitment({
@@ -34,7 +81,7 @@ export default function CreateScreen() {
         startDate: startDate.trim(),
         endDate: endDate.trim(),
         checkInFrequency: frequency,
-        stakesAmount: Number.isNaN(amount) ? 0 : amount,
+        stakesAmount: stakesCents,
         stakesCurrency: "USD",
         refereeId: refereeId.trim() || undefined
       });
@@ -45,6 +92,9 @@ export default function CreateScreen() {
       setEndDate("");
       setStakesAmount("");
       setRefereeId("");
+      setRefereeQuery("");
+      setRefereeResults([]);
+      setSelectedReferee(null);
     } catch (err) {
       setError("Unable to create commitment. Check your fields.");
     } finally {
@@ -123,13 +173,43 @@ export default function CreateScreen() {
           keyboardType="numeric"
           style={styles.input}
         />
-        <TextInput
-          label="Referee User ID (required if stakes > 0)"
-          mode="outlined"
-          value={refereeId}
-          onChangeText={setRefereeId}
-          style={styles.input}
-        />
+        {hasStakes ? (
+          <View style={styles.refereeWrap}>
+            <Text style={styles.section}>Referee (required)</Text>
+            <TextInput
+              label="Search by username"
+              mode="outlined"
+              value={refereeQuery}
+              onChangeText={setRefereeQuery}
+              autoCapitalize="none"
+              style={styles.input}
+            />
+
+            {searchingReferee ? <ActivityIndicator style={styles.searching} /> : null}
+
+            {refereeResults.map((user) => {
+              const active = selectedReferee?.id === user.id;
+              const subtitle = user.displayName ? `${user.displayName} · @${user.username}` : `@${user.username}`;
+              return (
+                <Button
+                  key={user.id}
+                  mode={active ? "contained" : "outlined"}
+                  style={styles.resultButton}
+                  onPress={() => {
+                    setSelectedReferee(user);
+                    setRefereeId(user.id);
+                  }}
+                >
+                  {subtitle}
+                </Button>
+              );
+            })}
+
+            {!searchingReferee && refereeQuery.trim().length >= 2 && refereeResults.length === 0 ? (
+              <HelperText type="info">No users found for that search.</HelperText>
+            ) : null}
+          </View>
+        ) : null}
 
         <HelperText type={error ? "error" : "info"}>
           {error ?? success ?? "Fill in the details and submit."}
@@ -178,5 +258,15 @@ const styles = StyleSheet.create({
   note: {
     marginTop: 16,
     color: "#555"
+  },
+  refereeWrap: {
+    marginBottom: 8
+  },
+  searching: {
+    marginVertical: 8
+  },
+  resultButton: {
+    marginBottom: 8,
+    justifyContent: "flex-start"
   }
 });

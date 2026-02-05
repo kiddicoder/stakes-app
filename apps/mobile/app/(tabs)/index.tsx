@@ -197,6 +197,15 @@ export default function HomeScreen() {
             value={summary?.pendingActions.challengeInvites ?? 0}
             tone="neutral"
           />
+          <View style={styles.pendingButtons}>
+            <Button
+              mode="contained-tonal"
+              onPress={() => router.push("/referee")}
+              disabled={(summary?.pendingActions.refereeVerificationsNeeded ?? 0) === 0}
+            >
+              Review Referee Queue
+            </Button>
+          </View>
         </Surface>
 
         <View style={styles.sectionHeader}>
@@ -318,6 +327,9 @@ const styles = StyleSheet.create({
   actionValueNeutral: {
     fontWeight: "700",
     color: "#243B53"
+  },
+  pendingButtons: {
+    marginTop: 10
   },
   sectionHeader: {
     marginTop: 8,
